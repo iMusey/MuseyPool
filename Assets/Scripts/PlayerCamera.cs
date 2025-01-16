@@ -21,6 +21,11 @@ public class PlayerCamera : MonoBehaviour
     public float dTheta;
     public float dTilt;
 
+    public KeyCode forward;
+    public KeyCode left;
+    public KeyCode backward;
+    public KeyCode right;
+
 
     // Start is called before the first frame update
     void Start()
@@ -33,6 +38,8 @@ public class PlayerCamera : MonoBehaviour
     {
         TargetBall();
 
+        ManualMovement();
+
         CameraControls();
     }
 
@@ -40,7 +47,7 @@ public class PlayerCamera : MonoBehaviour
     {
         // shoot ray
         ray = Camera.main.ScreenPointToRay(Input.mousePosition);
-        Debug.DrawRay(ray.origin, ray.direction*100, Color.red, 0.1f);
+        //Debug.DrawRay(ray.origin, ray.direction*100, Color.red, 0.1f);
 
         // hover or target
         if (hover != null)
@@ -66,6 +73,17 @@ public class PlayerCamera : MonoBehaviour
                     }
                     target = temp;
                     target.targeted = true;
+
+                    // when you target a ball, look towards it
+
+                    // radius based on distance to ball
+                    radius = Vector3.Distance(target.transform.position, transform.position);
+
+                    // tilt based on y position
+                    tilt = -Mathf.Asin((target.transform.position.y - transform.position.y)/radius);
+
+                    // theta based on
+                    theta = Mathf.Atan2((transform.position.z - target.transform.position.z), (transform.position.x - target.transform.position.x));
                     center = target.transform.position;
                 }
                 else // otherwise hover it
@@ -79,6 +97,46 @@ public class PlayerCamera : MonoBehaviour
                 target.targeted = false;
                 target = null;
             }
+        }
+    }
+
+    void ManualMovement()
+    {
+        if (Input.GetKey(forward))
+        {
+            if (target != null)
+            {
+                target.targeted = false;
+                target = null;
+            }
+            center.x -= Time.deltaTime * speed;
+        }
+        if (Input.GetKey(left))
+        {
+            if (target != null)
+            {
+                target.targeted = false;
+                target = null;
+            }
+            center.z -= Time.deltaTime * speed;
+        }
+        if (Input.GetKey(backward))
+        {
+            if (target != null)
+            {
+                target.targeted = false;
+                target = null;
+            }
+            center.x += Time.deltaTime * speed;
+        }
+        if (Input.GetKey(right))
+        {
+            if (target != null)
+            {
+                target.targeted = false;
+                target = null;
+            }
+            center.z += Time.deltaTime * speed;
         }
     }
 
@@ -112,6 +170,9 @@ public class PlayerCamera : MonoBehaviour
             tilt += looking.y;
         }
 
+        // scrolling for radius
+        radius -= Input.mouseScrollDelta.y;
+
         // Create New Position based on theta tilt and radius
         Vector3 pos = Vector3.zero;
         pos.x += Mathf.Sin(90 * Mathf.Deg2Rad - tilt) * Mathf.Cos(theta);
@@ -127,4 +188,5 @@ public class PlayerCamera : MonoBehaviour
         // Set New Position
         transform.position = pos;
     }
+
 }
